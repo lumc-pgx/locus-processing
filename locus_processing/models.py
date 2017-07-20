@@ -12,6 +12,9 @@ class Coordinates(object):
         self.start = start
         self.end = end
 
+    def __len__(self):
+        return self.end - self.start
+
 
 class Snp(object):
     def __init__(self, g_notation: str, alt_notation: str,

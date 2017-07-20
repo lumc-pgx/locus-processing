@@ -1,4 +1,5 @@
-from marshmallow import Schema, fields, post_load
+from marshmallow import Schema, fields, post_load, validates_schema
+from marshmallow.exceptions import ValidationError
 
 from .models import Chromosome, Coordinates, Snp, Haplotype, Locus
 
@@ -44,6 +45,11 @@ class CoordinatesSchema(Schema):
     @post_load
     def make_coordinate(self, data):
         return Coordinates(**data)
+
+    @validates_schema
+    def validate_location(self, data):
+        if data['end'] < data['start']:
+            raise ValidationError("End cannot be before start")
 
 
 class SnpSchema(Schema):
