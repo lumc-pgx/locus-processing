@@ -2,6 +2,7 @@ from marshmallow import Schema, fields, post_load
 
 from .models import Chromosome, Coordinates, Snp, Haplotype, Locus
 
+
 class DictField(fields.Field):
     # adapted from https://github.com/marshmallow-code/marshmallow/issues/120#issuecomment-81382070
 
