@@ -1,5 +1,7 @@
 from typing import List, Dict
 
+from .lookups import fetch_rsid, fetch_sequence
+
 
 class Chromosome(object):
     def __init__(self, name: str, accession: str):
@@ -27,6 +29,30 @@ class Snp(object):
         self.description = description
         self.tags = tags
 
+        self.__rs_id_lookup = None
+
+    @property
+    def __get_rs_id_lookup(self) -> dict:
+        if self.__rs_id_lookup is None:
+            self.__rs_id_lookup = fetch_sequence(self.alt_notation)
+        return self.__rs_id_lookup
+
+    @property
+    def minor_allele(self) -> str:
+        return self.__get_rs_id_lookup.get("minor_allele", "")
+
+    @property
+    def major_allele(self) -> str:
+        return self.__get_rs_id_lookup.get("ancestral_allele", "")
+
+    @property
+    def maf(self) -> float:
+        return self.__get_rs_id_lookup.get("MAF", 0.0)
+
+    @property
+    def synonyms(self) -> List[str]:
+        return self.__get_rs_id_lookup.get("synonyms", [])
+
 
 class Haplotype(object):
     def __init__(self, name: str, type: str, snps: List[str], activity: str):
@@ -49,3 +75,14 @@ class Locus(object):
         self.transcript = transcript
         self.snps = snps
         self.haplotypes = haplotypes
+
+        self.__sequence = None
+
+    @property
+    def sequence(self):
+        if self.__sequence is None:
+            self.__sequence = fetch_sequence(self.reference,
+                                             self.chromosome.name,
+                                             self.coordinates.start,
+                                             self.coordinates.end)
+        return self.__sequence
