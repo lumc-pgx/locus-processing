@@ -34,7 +34,7 @@ class Snp(object):
     @property
     def __get_rs_id_lookup(self) -> dict:
         if self.__rs_id_lookup is None:
-            self.__rs_id_lookup = fetch_sequence(self.alt_notation)
+            self.__rs_id_lookup = fetch_rsid(self.alt_notation)
         return self.__rs_id_lookup
 
     @property
