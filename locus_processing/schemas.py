@@ -1,5 +1,6 @@
-from marshmallow import Schema, fields
+from marshmallow import Schema, fields, post_load
 
+from .models import Chromosome, Coordinates, Snp, Haplotype, Locus
 
 class DictField(fields.Field):
     # adapted from https://github.com/marshmallow-code/marshmallow/issues/120#issuecomment-81382070
@@ -30,10 +31,18 @@ class ChromosomeSchema(Schema):
     name = fields.Str()
     accession = fields.Str()
 
+    @post_load
+    def make_chromosome(self, data):
+        return Chromosome(**data)
+
 
 class CoordinatesSchema(Schema):
     start = fields.Int()
     end = fields.Int()
+
+    @post_load
+    def make_coordinate(self, data):
+        return Coordinates(**data)
 
 
 class SnpSchema(Schema):
@@ -44,12 +53,20 @@ class SnpSchema(Schema):
     description = fields.Str(allow_none=True)
     tags = fields.List(fields.Str(), allow_none=True)
 
+    @post_load
+    def make_snp(self, data):
+        return Snp(**data)
+
 
 class HaplotypeSchema(Schema):
     name = fields.Str(allow_none=True)
     type = fields.Str(allow_none=True)
-    snsps = fields.List(fields.Str(), allow_none=True)
+    snps = fields.List(fields.Str(), allow_none=True)
     activity = fields.Str(allow_none=True)
+
+    @post_load
+    def make_haplotype(self, data):
+        return Haplotype(**data)
 
 
 class LocusSchema(Schema):
@@ -61,3 +78,7 @@ class LocusSchema(Schema):
     transcript = fields.Str()
     snps = DictField(fields.Str(), fields.Nested(SnpSchema))
     haplotypes = fields.Nested(HaplotypeSchema, many=True)
+
+    @post_load
+    def make_locus(self, data):
+        return Locus(**data)
