@@ -19,9 +19,10 @@ class Coordinates(object):
 
 
 class Snp(object):
-    def __init__(self, g_notation: str, alt_notation: str,
+    def __init__(self, id: str, g_notation: str, alt_notation: str,
                  c_notation: str, p_notation: str, description: str,
                  tags: List[str]):
+        self.id = id
         self.g_notation = g_notation
         self.alt_notation = alt_notation
         self.c_notation = c_notation
