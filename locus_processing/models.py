@@ -1,6 +1,8 @@
-from typing import List, Dict
+import warnings
+from typing import List
 
-from .lookups import fetch_rsid, fetch_sequence
+from .lookups import fetch_rsid, fetch_sequence, position_converter, name_checker
+from .utils import Result
 
 
 class Chromosome(object):
@@ -32,6 +34,12 @@ class Snp(object):
 
         self.__rs_id_lookup = None
 
+    def __repr__(self):
+        return "<Snp(id={i}, g_notation={g})>".format(
+            i=self.id,
+            g=self.g_notation
+        )
+
     @property
     def __get_rs_id_lookup(self) -> dict:
         if self.__rs_id_lookup is None:
@@ -53,6 +61,76 @@ class Snp(object):
     @property
     def synonyms(self) -> List[str]:
         return self.__get_rs_id_lookup.get("synonyms", [])
+
+    def apply_hgvs(self, build: str, chromosome: str,
+                   overwrite: bool) -> Result:
+        """
+        Apply hgvs to the c_notation and p_notation fields.
+
+        This will require several lookups to mutalyzer.
+        Returns a Result object with any values, errors and warnings.
+
+        If result.is_successful, results will have been applied to the object.
+        the result will contain a warning of c_notation and p_notation have
+        already been set, and overwrite=True
+        :param build: genome build
+        :param chromosome: chromosome accession nr
+        :param overwrite: overwrite old c_notation and p_notation
+        :return:
+        """
+        res = Result(False, values={}, errors=[], warnings=[])
+        if not overwrite and self.c_notation is not None:
+            res.errors.append("overwrite is disabled and c_notation is already set")
+        if not overwrite and self.p_notation is not None:
+            res.errors.append("overwrite is disabled and p_notation is already set")
+        if len(res.errors) > 0:
+            return res
+
+        if self.c_notation is not None:
+            res.warnings.append("c_notation was already set")
+        if self.p_notation is not None:
+            res.warnings.append("p_notation was already set")
+
+        variant = "{c}:g.{v}".format(c=chromosome, v=self.g_notation)
+        position_response = position_converter(build, variant)
+        if not position_response.ok:
+            res.errors.append("Could not get transcript "
+                              "position because {0}".format(
+                position_response.json().get("faultstring"))
+            )
+            return res
+        transcripts = position_response.json()
+        if len(transcripts) > 1:
+            res.warnings.append("More than one transcript found. "
+                                "Will select first transcript")
+
+        tr = transcripts[0]
+        res.values['c_notation'] = tr
+
+        protein_response = name_checker(tr)
+        protein_json = protein_response.json()
+        if not protein_response.ok:
+            error = protein_json.get("messages")[0].get("message")
+            res.errors.append("Could not get protein "
+                              "description because {0}".format(error))
+            return res
+
+        proteins = protein_json.get("proteinDescriptions")
+        if len(proteins) > 1:
+            res.warnings.append("More than one protein description")
+            protein = proteins[0]
+        elif len(proteins) == 0:
+            res.warnings.append("No protein descriptions")
+            protein = None
+        else:
+            protein = proteins[0]
+
+        res.values['p_notation'] = protein
+
+        self.c_notation = tr
+        self.p_notation = protein
+        res.success = True
+        return res
 
 
 class Haplotype(object):
@@ -95,9 +173,23 @@ class Locus(object):
                                              self.coordinates.end)
         return self.__sequence
 
-    def get_snp(self, id):
+    def get_snp(self, id: str) -> Snp:
         """Get snp by id"""
         ids = list(map(lambda x: x.id, self.snps))
         if id not in ids:
             return None
         return self.snps[ids.index(id)]
+
+    def apply_hgvs_descriptions(self, overwrite: bool = False, warn_on_error: bool = False):
+        """Apply hgvs descriptions for snps"""
+        for snp in self.snps:
+            res = snp.apply_hgvs(self.reference, self.chromosome.accession, overwrite)
+            for w in res.warnings:
+                warnings.warn("{0}: {1}".format(snp, w))
+            err_concat = ",".join(res.errors)
+            if len(res.errors) > 0:
+                if warn_on_error:
+                    warnings.warn("ERROR at {0}: {1}".format(snp, err_concat))
+                else:
+                    raise ValueError("ERROR at {0}: {1}".format(snp, err_concat))
+

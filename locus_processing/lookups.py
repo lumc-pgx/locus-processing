@@ -27,7 +27,7 @@ def fetch_rsid(rs_id: str, species: str = "human") -> dict:
 def fetch_sequence(reference: str, chromosome: str, start: int,
                    end: int, species: str = "human") -> str:
     """
-    Fetch seqeuence for a region from Ensembl
+    Fetch sequence for a region from Ensembl
     :param reference: name of reference build
     :param chromosome: chromosome
     :param start: start position
@@ -50,4 +50,13 @@ def fetch_sequence(reference: str, chromosome: str, start: int,
     return r.json().get("seq")
 
 
+def position_converter(build: str, variant: str) -> requests.Response:
+    url = "https://mutalyzer.nl/json/numberConversion"
+    r = requests.get(url, params={"build": build, "variant": variant})
+    return r
 
+
+def name_checker(variant: str) -> requests.Response:
+    url = "https://mutalyzer.nl/json/runMutalyzer"
+    r = requests.get(url, params={"variant": variant})
+    return r
