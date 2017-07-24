@@ -73,7 +73,7 @@ class Haplotype(object):
 class Locus(object):
     def __init__(self, version: str, name: str, reference: str,
                  chromosome: Chromosome, coordinates: Coordinates,
-                 transcript: str, snps: Dict[str, Snp],
+                 transcript: str, snps: List[Snp],
                  haplotypes: List[Haplotype]):
         self.version = version
         self.name = name
@@ -94,3 +94,10 @@ class Locus(object):
                                              self.coordinates.start,
                                              self.coordinates.end)
         return self.__sequence
+
+    def get_snp(self, id):
+        """Get snp by id"""
+        ids = list(map(lambda x: x.id, self.snps))
+        if id not in ids:
+            return None
+        return self.snps[ids.index(id)]
