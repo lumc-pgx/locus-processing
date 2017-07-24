@@ -4,31 +4,6 @@ from marshmallow.exceptions import ValidationError
 from .models import Chromosome, Coordinates, Snp, Haplotype, Locus
 
 
-class DictField(fields.Field):
-    # adapted from https://github.com/marshmallow-code/marshmallow/issues/120#issuecomment-81382070
-
-    def __init__(self, key_field, nested_field, *args, **kwargs):
-        fields.Field.__init__(self, *args, **kwargs)
-        self.key_field = key_field
-        self.nested_field = nested_field
-
-    def _deserialize(self, value, attr, obj):
-        ret = {}
-        for key, val in value.items():
-            k = self.key_field.deserialize(key)
-            v = self.nested_field.deserialize(val)
-            ret[k] = v
-        return ret
-
-    def _serialize(self, value, attr, obj):
-        ret = {}
-        for key, val in value.items():
-            k = self.key_field._serialize(key, attr, obj)
-            v = self.nested_field.serialize(key, self.get_value(attr, obj))
-            ret[k] = v
-        return ret
-
-
 class ChromosomeSchema(Schema):
     name = fields.Str()
     accession = fields.Str()
@@ -53,6 +28,7 @@ class CoordinatesSchema(Schema):
 
 
 class SnpSchema(Schema):
+    id = fields.Str()
     g_notation = fields.Str()
     alt_notation = fields.Str()
     c_notation = fields.Str(allow_none=True)
@@ -83,9 +59,17 @@ class LocusSchema(Schema):
     chromosome = fields.Nested(ChromosomeSchema)
     coordinates = fields.Nested(CoordinatesSchema)
     transcript = fields.Str()
-    snps = DictField(fields.Str(), fields.Nested(SnpSchema))
+    snps = fields.Nested(SnpSchema, many=True)
     haplotypes = fields.Nested(HaplotypeSchema, many=True)
 
     @post_load
     def make_locus(self, data):
         return Locus(**data)
+
+    @validates_schema
+    def validate_haplotypes(self, data):
+        snp_ids = [x.id for x in data['snps']]
+        for hap in data['haplotypes']:
+            for snp in hap.snps:
+                if snp not in snp_ids:
+                    raise ValidationError
