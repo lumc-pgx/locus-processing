@@ -15,6 +15,12 @@ setup(
         "requests>=2.18.1"
     ],
     tests_requires=['pytest'],
+    entry_points={
+        "console_scripts": [
+            "locus2bed = locus_processing.cli:locus_to_bed",
+            "validate_locus = locus_processing.cli:validate_locus"
+        ]
+    },
     classifiers = [
         'Development Status :: 3 - Alpha',
         'Intended Audience :: Developers',
