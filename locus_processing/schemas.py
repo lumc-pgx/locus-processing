@@ -68,8 +68,8 @@ class LocusSchema(Schema):
 
     @validates_schema
     def validate_haplotypes(self, data):
-        snp_ids = [x.id for x in data['snps']]
+        snp_ids = [x.id for x in data.get('snps', [])]
         for hap in data['haplotypes']:
             for snp in hap.snps:
                 if snp not in snp_ids:
-                    raise ValidationError
+                    raise ValidationError("Haplotype {0} is malformed".format(hap))

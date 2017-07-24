@@ -62,6 +62,13 @@ class Haplotype(object):
         self.snps = snps
         self.activity = activity
 
+    def __repr__(self):
+        fmt = "<Haplotype(name={n}, type={t})>".format(
+            n=self.name,
+            t=self.type
+        )
+        return fmt
+
 
 class Locus(object):
     def __init__(self, version: str, name: str, reference: str,
