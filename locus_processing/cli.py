@@ -7,7 +7,9 @@ from . import load_locus_yaml
 
 
 def _validate_inputs(ctx, param, value):
-    """Mutually exclusive group for -I and -D"""
+    """Mutually exclusive group for -I and -D
+    Returns generator of yaml paths for -D
+    """
     if param.name == "input_directory":
         idir = value
         ifile = ctx.params.get("input")
@@ -18,8 +20,16 @@ def _validate_inputs(ctx, param, value):
         ifile = None
         idir = None
 
-    if (ifile is None and idir is None) or (ifile is not None and idir is not None):
-        raise click.BadArgumentUsage("Either --input OR --input-directory must be set")
+    if (ifile is None and idir is None) or \
+            (ifile is not None and idir is not None):
+        raise click.BadArgumentUsage("Either --input OR "
+                                     "--input-directory must be set")
+
+    if idir is not None:
+        candidates = [join(idir, x) for x in listdir(idir)]
+        return filter(lambda x: isfile(x) and
+                      (x.endswith('yaml') or x.endswith('yml')),
+                      candidates)
 
     return value
 
@@ -45,16 +55,15 @@ def _single_locus_to_bed(path, prefix):
               help="Path to input locus file")
 @click.option("--input-directory", "-D",
               type=click.Path(exists=True, file_okay=False, dir_okay=True),
-              help="Path to directory containing locus files", callback=_validate_inputs)
+              help="Path to directory containing locus files",
+              callback=_validate_inputs)
 @click.option("--prefix", "-p",
               type=click.STRING, help="Prefix to region names")
 def locus_to_bed(input=None, input_directory=None, prefix=None):
     if input:
         print(_single_locus_to_bed(input, prefix))
     else:
-        candidates = [join(input_directory, x) for x in listdir(input_directory)]
-        yamls = filter(lambda x: isfile(x) and (x.endswith(".yaml") or x.endswith(".yml")), candidates)
-        for y in yamls:
+        for y in input_directory:
             print(_single_locus_to_bed(y, prefix))
 
 
@@ -81,7 +90,5 @@ def validate_locus(input=None, input_directory=None):
     if input is not None:
         _validate_single_locus(input)
     else:
-        candidates = [join(input_directory, x) for x in listdir(input_directory)]
-        yamls = filter(lambda x: isfile(x) and (x.endswith(".yaml") or x.endswith(".yml")), candidates)
-        for y in yamls:
+        for y in input_directory:
             _validate_single_locus(y)
