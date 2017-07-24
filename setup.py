@@ -11,7 +11,8 @@ setup(
     platforms=['any'],
     packages=["locus_processing"],
     install_requires=[
-        "marshmallow>=2.13.5"
+        "marshmallow>=2.13.5",
+        "requests>=2.18.1"
     ],
     tests_requires=['pytest'],
     classifiers = [
