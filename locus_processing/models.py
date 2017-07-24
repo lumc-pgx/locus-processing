@@ -1,7 +1,8 @@
 import warnings
 from typing import List
 
-from .lookups import fetch_rsid, fetch_sequence, position_converter, name_checker
+from .lookups import fetch_rsid, fetch_sequence, position_converter,\
+    name_checker
 from .utils import Result
 
 
@@ -10,11 +11,23 @@ class Chromosome(object):
         self.name = name
         self.accession = accession
 
+    def __repr__(self):
+        return "<Chromosome(name={n}, accession={a})>".format(
+            n=self.name,
+            a=self.accession
+        )
+
 
 class Coordinates(object):
     def __init__(self, start: int, end: int):
         self.start = start
         self.end = end
+
+    def __repr__(self):
+        return "<Coordinates(start={s}, end={e})>".format(
+            s=self.start,
+            e=self.end
+        )
 
     def __len__(self):
         return self.end - self.start
@@ -164,6 +177,12 @@ class Locus(object):
 
         self.__sequence = None
 
+    def __repr__(self):
+        return "<Locus(name={n}, version={v})>".format(
+            n=self.name,
+            v=self.version
+        )
+
     @property
     def sequence(self):
         if self.__sequence is None:
@@ -180,10 +199,12 @@ class Locus(object):
             return None
         return self.snps[ids.index(id)]
 
-    def apply_hgvs_descriptions(self, overwrite: bool = False, warn_on_error: bool = False):
+    def apply_hgvs_descriptions(self, overwrite: bool = False,
+                                warn_on_error: bool = False):
         """Apply hgvs descriptions for snps"""
         for snp in self.snps:
-            res = snp.apply_hgvs(self.reference, self.chromosome.accession, overwrite)
+            res = snp.apply_hgvs(self.reference, self.chromosome.accession,
+                                 overwrite)
             for w in res.warnings:
                 warnings.warn("{0}: {1}".format(snp, w))
             err_concat = ",".join(res.errors)
@@ -191,5 +212,7 @@ class Locus(object):
                 if warn_on_error:
                     warnings.warn("ERROR at {0}: {1}".format(snp, err_concat))
                 else:
-                    raise ValueError("ERROR at {0}: {1}".format(snp, err_concat))
+                    raise ValueError("ERROR at {0}: {1}".format(
+                        snp, err_concat)
+                    )
 
