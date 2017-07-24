@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load, validates_schema
+from marshmallow import Schema, fields, post_load, validates_schema, post_dump
 from marshmallow.exceptions import ValidationError
 
 from .models import Chromosome, Coordinates, Snp, Haplotype, Locus
@@ -31,6 +31,7 @@ class SnpSchema(Schema):
     id = fields.Str()
     g_notation = fields.Str()
     alt_notation = fields.Str()
+    ref_g_notation = fields.Str(required=False, missing=None)
     c_notation = fields.Str(allow_none=True)
     p_notation = fields.Str(allow_none=True)
     description = fields.Str(allow_none=True)
@@ -39,6 +40,12 @@ class SnpSchema(Schema):
     @post_load
     def make_snp(self, data):
         return Snp(**data)
+
+    @post_dump
+    def remove_ref_g_if_none(self, data):
+        if data.get("ref_g_notation") is None:
+            return {k: v for k, v in data.items() if k != "ref_g_notation"}
+        return data
 
 
 class HaplotypeSchema(Schema):
