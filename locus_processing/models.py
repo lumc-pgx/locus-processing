@@ -209,6 +209,10 @@ class Locus(object):
         """Get snp by id"""
         return next((s for s in self.snps if s.id == id), None)
 
+    def get_haplotype_snps(self, haplotype: Haplotype) -> List[Snp]:
+        """Get snps for specific haplotype"""
+        return [s for s in self.snps if s.id in haplotype.snps]
+
     def apply_hgvs_descriptions(self, overwrite: bool = False,
                                 warn_on_error: bool = False):
         """Apply hgvs descriptions for snps"""
