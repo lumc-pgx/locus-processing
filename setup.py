@@ -19,7 +19,8 @@ setup(
     entry_points={
         "console_scripts": [
             "locus2bed = locus_processing.cli:locus_to_bed",
-            "validate_locus = locus_processing.cli:validate_locus"
+            "validate_locus = locus_processing.cli:validate_locus",
+            "complete_locus = locus_processing.cli:complete_locus"
         ]
     },
     classifiers = [

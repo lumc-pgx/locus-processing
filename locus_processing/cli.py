@@ -1,9 +1,11 @@
 from os import listdir
-from os.path import join, isfile
+from os.path import join, isfile, basename
+import warnings
 
 import click
+import yaml
 
-from . import load_locus_yaml
+from . import load_locus_yaml, dump_locus
 
 
 def _validate_inputs(ctx, param, value):
@@ -31,6 +33,16 @@ def _validate_inputs(ctx, param, value):
                       (x.endswith('yaml') or x.endswith('yml')),
                       candidates)
 
+    return value
+
+
+def _validate_output(ctx, param, value):
+    if param.name == "output_directory":
+        idir = ctx.params.get("input_directory")
+        if idir is None and value is not None:
+            raise click.BadArgumentUsage("-O must be combined with -D")
+        elif idir is not None and value is None:
+            raise click.BadArgumentUsage("-O must be combined with -D")
     return value
 
 
@@ -92,3 +104,45 @@ def validate_locus(input=None, input_directory=None):
     else:
         for y in input_directory:
             _validate_single_locus(y)
+
+
+def _complete_single_locus(fpath):
+    l = load_locus_yaml(fpath)
+    l.apply_hgvs_descriptions(warn_on_error=True)
+    return dump_locus(l)
+
+
+@click.command(short_help="Attempt to complete HGVS descriptions "
+                          "within locus definitions")
+@click.option("--input", "-I", type=click.Path(exists=True),
+              help="Path to input locus file")
+@click.option("--input-directory", "-D",
+              type=click.Path(exists=True, file_okay=False, dir_okay=True),
+              help="Path to directory containing locus files",
+              callback=_validate_inputs)
+@click.option("--output-directory", "-O",
+              type=click.Path(exists=True, file_okay=False, dir_okay=True,
+                              writable=True),
+              help="Path to output directory", callback=_validate_output)
+@click.option("--suppress-warnings", type=click.BOOL,
+              help="Suppress warnings")
+def complete_locus(input=None, input_directory=None, output_directory=None,
+                   suppress_warnings=False):
+    if suppress_warnings:
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            _complete_locus(input, input_directory, output_directory)
+    else:
+        _complete_locus(input, input_directory, output_directory)
+
+
+def _complete_locus(input=None, input_directory=None, output_directory=None):
+    if input is not None:
+        l = _complete_single_locus(input)
+        print(yaml.dump(l, default_flow_style=False))
+    else:
+        for p in input_directory:
+            opath = join(output_directory, basename(p))
+            l = _complete_single_locus(p)
+            with open(opath, "w") as ohandle:
+                yaml.dump(l, ohandle, default_flow_style=False)
