@@ -77,7 +77,7 @@ class Snp(object):
         return self.__get_rs_id_lookup.get("synonyms", [])
 
     def apply_hgvs(self, build: str, chromosome: str,
-                   overwrite: bool) -> Result:
+                   overwrite: bool, transcript: str = None) -> Result:
         """
         Apply hgvs to the c_notation and p_notation fields.
 
@@ -90,6 +90,7 @@ class Snp(object):
         :param build: genome build
         :param chromosome: chromosome accession nr
         :param overwrite: overwrite old c_notation and p_notation
+        :param transcript: preferred transcript to select
         :return:
         """
         res = Result(False, values={}, errors=[], warnings=[])
@@ -114,11 +115,17 @@ class Snp(object):
             )
             return res
         transcripts = position_response.json()
-        if len(transcripts) > 1:
-            res.warnings.append("More than one transcript found. "
-                                "Will select first transcript")
+        if transcript is not None and transcript in transcripts:
+            tr = transcripts[transcripts.index(transcript)]
+        elif transcript is not None:
+            res.warnings.append("Could not find preferred transcript")
+            tr = transcripts[0]
+        else:
+            if len(transcripts) > 1:
+                res.warnings.append("More than one transcript found. "
+                                    "Will select first transcript")
 
-        tr = transcripts[0]
+            tr = transcripts[0]
         res.values['c_notation'] = tr
 
         protein_response = name_checker(tr)
@@ -205,7 +212,7 @@ class Locus(object):
         """Apply hgvs descriptions for snps"""
         for snp in self.snps:
             res = snp.apply_hgvs(self.reference, self.chromosome.accession,
-                                 overwrite)
+                                 overwrite, self.transcript)
             for w in res.warnings:
                 warnings.warn("{0}: {1}".format(snp, w))
             err_concat = ",".join(res.errors)
