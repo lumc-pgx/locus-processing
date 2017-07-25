@@ -115,8 +115,9 @@ class Snp(object):
             )
             return res
         transcripts = position_response.json()
-        if transcript is not None and transcript in transcripts:
-            tr = transcripts[transcripts.index(transcript)]
+        transcript_names = list(map(lambda x: x.split(":")[0], transcripts))
+        if transcript is not None and transcript in transcript_names:
+            tr = transcripts[transcript_names.index(transcript)]
         elif transcript is not None:
             res.warnings.append("Could not find preferred transcript")
             tr = transcripts[0]
