@@ -1,0 +1,132 @@
+{
+    "required": [],
+    "type": "object",
+    "properties": {
+        "chromosome": {
+            "required": [],
+            "type": "object",
+            "properties": {
+                "accession": {
+                    "title": "accession",
+                    "type": "string"
+                },
+                "name": {
+                    "title": "name",
+                    "type": "string"
+                }
+            }
+        },
+        "coordinates": {
+            "required": [],
+            "type": "object",
+            "properties": {
+                "end": {
+                    "title": "end",
+                    "type": "number",
+                    "format": "integer"
+                },
+                "start": {
+                    "title": "start",
+                    "type": "number",
+                    "format": "integer"
+                }
+            }
+        },
+        "haplotypes": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "activity": {
+                        "title": "activity",
+                        "type": "string"
+                    },
+                    "name": {
+                        "title": "name",
+                        "type": "string"
+                    },
+                    "snps": {
+                        "title": "snps",
+                        "type": "array",
+                        "items": {
+                            "title": "snps",
+                            "type": "string"
+                        }
+                    },
+                    "type": {
+                        "title": "type",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "name": {
+            "title": "name",
+            "type": "string"
+        },
+        "reference": {
+            "title": "reference",
+            "type": "string"
+        },
+        "snps": {
+            "type": [
+                "array",
+                "null"
+            ],
+            "items": {
+                "required": [],
+                "type": "object",
+                "properties": {
+                    "alt_notation": {
+                        "title": "alt_notation",
+                        "type": "string"
+                    },
+                    "c_notation": {
+                        "title": "c_notation",
+                        "type": "string"
+                    },
+                    "description": {
+                        "title": "description",
+                        "type": "string"
+                    },
+                    "g_notation": {
+                        "title": "g_notation",
+                        "type": "string"
+                    },
+                    "id": {
+                        "title": "id",
+                        "type": "string"
+                    },
+                    "p_notation": {
+                        "title": "p_notation",
+                        "type": "string"
+                    },
+                    "ref_g_notation": {
+                        "title": "ref_g_notation",
+                        "type": "string"
+                    },
+                    "tags": {
+                        "title": "tags",
+                        "type": "array",
+                        "items": {
+                            "title": "tags",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "transcript": {
+            "title": "transcript",
+            "type": "string"
+        },
+        "version": {
+            "title": "version",
+            "type": "string"
+        }
+    }
+}

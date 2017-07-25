@@ -11,6 +11,7 @@ setup(
     platforms=['any'],
     packages=["locus_processing"],
     install_requires=[
+        "click>=6.7",
         "marshmallow>=2.13.5",
         "requests>=2.18.1"
     ],
