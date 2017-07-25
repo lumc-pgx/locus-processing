@@ -207,10 +207,7 @@ class Locus(object):
 
     def get_snp(self, id: str) -> Snp:
         """Get snp by id"""
-        ids = list(map(lambda x: x.id, self.snps))
-        if id not in ids:
-            return None
-        return self.snps[ids.index(id)]
+        return next((s for s in self.snps if s.id == id), None)
 
     def apply_hgvs_descriptions(self, overwrite: bool = False,
                                 warn_on_error: bool = False):
