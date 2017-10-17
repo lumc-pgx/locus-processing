@@ -13,7 +13,8 @@ setup(
     install_requires=[
         "click>=6.7",
         "marshmallow>=2.13.5",
-        "requests>=2.18.1"
+        "requests>=2.18.1",
+        "pyyaml>=3.12"
     ],
     tests_requires=['pytest'],
     entry_points={
