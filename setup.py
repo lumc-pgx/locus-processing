@@ -6,7 +6,7 @@ setup(
     description="Tools for working with locus definition files",
     author="Sander Bollen",
     author_email="a.h.b.bollen@lumc.nl",
-    url="https://git.lumc.nl/PharmacogenomicsPipe/locus_processing",
+    url="https://github.com/lumc-pgx/locus-processing",
     license="MIT",
     platforms=['any'],
     packages=["locus_processing"],
